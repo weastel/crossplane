@@ -17,9 +17,9 @@ limitations under the License.
 package core
 
 import (
-	"fmt"
 	"time"
 
+	"github.com/go-logr/logr"
 	"github.com/pkg/errors"
 	"github.com/spf13/afero"
 	extv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
@@ -42,7 +42,8 @@ type Cmd struct {
 }
 
 // Run core Crossplane controllers.
-func (c *Cmd) Run(log logging.Logger) error {
+func (c *Cmd) Run(zl *logr.Logger) error {
+	log := logging.NewLogrLogger((*zl).WithName("crossplane"))
 	log.Debug("Starting", "sync-period", c.Sync.String())
 
 	cfg, err := ctrl.GetConfig()
@@ -52,7 +53,7 @@ func (c *Cmd) Run(log logging.Logger) error {
 
 	mgr, err := ctrl.NewManager(cfg, ctrl.Options{
 		LeaderElection:   c.LeaderElection,
-		LeaderElectionID: fmt.Sprintf("crossplane-leader-election-core"),
+		LeaderElectionID: "crossplane-leader-election-core",
 		SyncPeriod:       &c.Sync,
 	})
 	if err != nil {

@@ -20,30 +20,38 @@ import (
 	"strings"
 
 	"github.com/alecthomas/kong"
+	"github.com/go-logr/logr"
+	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
 	"github.com/crossplane/crossplane/cmd/crossplane/core"
 	"github.com/crossplane/crossplane/cmd/crossplane/rbac"
 )
 
+type debugFlag bool
+
 var _ = kong.Must(&cli)
 
+func (d *debugFlag) AfterApply(zl *logr.Logger) error { // nolint:unparam
+	*zl = zap.New(zap.UseDevMode(bool(*d)))
+	if *d {
+		ctrl.SetLogger(*zl)
+	}
+	return nil
+}
+
 var cli struct {
+	Debug debugFlag `help:"Enable debug loggging."`
+
 	Core core.Cmd `cmd:"" help:"Start core Crossplane controllers."`
 	Rbac rbac.Cmd `cmd:"" help:"Start Crossplane RBAC Manager controllers."`
 }
 
 func main() {
 
-	// TODO: Fix Debugging issue
 	// NOTE(negz): We must setup our logger after calling kingpin.MustParse in
 	// order to ensure the debug flag has been parsed and set.
-	// zl := zap.New(zap.UseDevMode(*debug))
-	// if *debug {
-	// 	// The controller-runtime runs with a no-op logger by default. It is
-	// 	// *very* verbose even at info level, so we only provide it a real
-	// 	// logger when we're running in debug mode.
-	// 	ctrl.SetLogger(zl)
-	// }
+	zl := zap.New(zap.UseDevMode(false))
 
 	ctx := kong.Parse(&cli,
 		kong.Name("crossplane"),
@@ -57,6 +65,7 @@ func main() {
 				},
 				","),
 		},
+		kong.Bind(&zl),
 		kong.UsageOnError())
 	err := ctx.Run()
 	ctx.FatalIfErrorf(err)
