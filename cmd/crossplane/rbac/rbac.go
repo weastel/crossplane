@@ -41,7 +41,7 @@ const (
 type Cmd struct {
 	Sync                time.Duration `short:"s" default:"1h" help:"Controller manager sync period duration such as 300ms, 1.5h or 2h45m."`
 	LeaderElection      bool          `short:"l" default:"false" env:"LEADER_ELECTION" help:"Use leader election for the conroller manager."`
-	ManagementPolicy    string        `short:"m" name:"manage" default:"All" enum:"All,Basic" help:"RBAC management policy."`
+	ManagementPolicy    string        `short:"m" name:"manage" default:"${rbac_manage_default_var}" enum:"${rbac_manage_enum_var}" help:"RBAC management policy."`
 	ProviderClusterRole string        `help:"A ClusterRole enumerating the permissions provider packages may request."`
 }
 

@@ -56,17 +56,18 @@ func main() {
 	ctx := kong.Parse(&cli,
 		kong.Name("crossplane"),
 		kong.Description("An open source multicloud control plane."),
+		kong.Bind(&zl),
+		kong.UsageOnError(),
 		kong.Vars{
-			"ManagementPolicyAll": rbac.ManagementPolicyAll,
-			"ManagementPolicyEnum": strings.Join(
+			"rbac_manage_default_var": rbac.ManagementPolicyAll,
+			"rbac_manage_enum_var": strings.Join(
 				[]string{
 					rbac.ManagementPolicyAll,
 					rbac.ManagementPolicyBasic,
 				},
-				","),
+				", "),
 		},
-		kong.Bind(&zl),
-		kong.UsageOnError())
+	)
 	err := ctx.Run()
 	ctx.FatalIfErrorf(err)
 }
